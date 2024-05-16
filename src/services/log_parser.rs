@@ -8,6 +8,7 @@ pub struct GameStats {
     pub total_kills: u32,
     pub players: Vec<String>,
     pub kills: HashMap<String, i32>,
+    pub kills_by_means: HashMap<String, u32>,
 }
 
 pub struct LogParser;
@@ -27,6 +28,9 @@ impl LogParser {
                 let killer_info: Vec<&str> = killer_info_str.split(" by ").collect();
                 let killer_name = killer_info[0].to_string();
                 let killed_name = killer_info[1].to_string();
+
+                let death_cause = killer_info[1].to_string();
+                *game_stats.kills_by_means.entry(death_cause).or_insert(0) += 1;
 
                 if killer_name != "<world>" {
                     *game_stats.kills.entry(killer_name.clone()).or_insert(0) += 1;
