@@ -54,7 +54,6 @@ impl LogParser {
                 } else {
                     *current_game.kills.entry("<world>".to_string()).or_insert(0) += 1;
                 }
-                *current_game.kills.entry(killed_name.clone()).or_insert(0) -= 1;
 
                 if killer_name != "<world>" && !current_players.contains_key(&killer_name) {
                     current_game.players.push(killer_name.clone());
