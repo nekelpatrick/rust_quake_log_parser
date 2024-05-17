@@ -51,6 +51,8 @@ impl LogParser {
 
                 if killer_name != "<world>" {
                     *current_game.kills.entry(killer_name.clone()).or_insert(0) += 1;
+                } else {
+                    *current_game.kills.entry("<world>".to_string()).or_insert(0) += 1;
                 }
                 *current_game.kills.entry(killed_name.clone()).or_insert(0) -= 1;
 
