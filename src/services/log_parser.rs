@@ -15,6 +15,7 @@ pub struct GameStats {
 pub struct Report {
     pub games: Vec<(String, GameStats)>,
     pub player_rankings: Vec<(String, i32)>,
+    pub total_deaths_by_means: HashMap<String, u32>,
 }
 
 pub struct LogParser;
@@ -29,6 +30,7 @@ impl LogParser {
         let mut game_counter = 1;
         let mut current_players = HashMap::new();
         let mut in_game = false;
+        let mut total_deaths_by_means = HashMap::new();
 
         for line in reader.lines() {
             let line = line?;
@@ -78,8 +80,9 @@ impl LogParser {
 
                     *current_game
                         .kills_by_means
-                        .entry(means_of_death)
+                        .entry(means_of_death.clone())
                         .or_insert(0) += 1;
+                    *total_deaths_by_means.entry(means_of_death).or_insert(0) += 1;
 
                     if killer_name != "<world>" && !current_players.contains_key(&killer_name) {
                         current_game.players.push(killer_name.clone());
@@ -126,6 +129,7 @@ impl LogParser {
         Ok(Report {
             games,
             player_rankings,
+            total_deaths_by_means,
         })
     }
 
