@@ -18,30 +18,7 @@ pub async fn health_check_handler() -> impl IntoResponse {
 pub async fn get_log_data_handler() -> impl IntoResponse {
     let file_path = "data/qgames.log";
     match LogParser::parse_log(file_path) {
-        Ok(report) => {
-            // Log report to the console
-            for (game_name, stats) in &report.games {
-                println!("{}:", game_name);
-                println!("  Total Kills: {}", stats.total_kills);
-                println!("  Players: {:?}", stats.players);
-                println!("  Kills:");
-                for (player, kills) in &stats.kills {
-                    println!("    {}: {}", player, kills);
-                }
-                println!("  Kills by Means:");
-                for (means, count) in &stats.kills_by_means {
-                    println!("    {}: {}", means, count);
-                }
-                println!();
-            }
-            println!("Player Rankings:");
-            for (player, kills) in &report.player_rankings {
-                println!("  {}: {}", player, kills);
-            }
-
-            // Return report in the API response
-            (StatusCode::OK, Json(report)).into_response()
-        }
+        Ok(report) => (StatusCode::OK, Json(report)).into_response(),
         Err(e) => {
             tracing::error!("Failed to parse log file: {}", e);
             (
