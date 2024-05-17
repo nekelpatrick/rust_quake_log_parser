@@ -18,6 +18,12 @@ pub struct Report {
     pub total_deaths_by_means: Vec<(String, u32)>,
 }
 
+impl Report {
+    pub fn to_string(&self) -> String {
+        serde_json::to_string_pretty(&self).unwrap_or_else(|_| "Failed to serialize report".into())
+    }
+}
+
 pub struct LogParser;
 
 impl LogParser {

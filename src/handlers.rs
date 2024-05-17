@@ -18,7 +18,11 @@ pub async fn health_check_handler() -> impl IntoResponse {
 pub async fn get_log_data_handler() -> impl IntoResponse {
     let file_path = "data/qgames.log";
     match LogParser::parse_log(file_path) {
-        Ok(report) => (StatusCode::OK, Json(report)).into_response(),
+        Ok(report) => {
+            // Uncomment the following line to print the output in the console ;)
+            // info!("{}", report.to_string());
+            (StatusCode::OK, Json(report)).into_response()
+        }
         Err(e) => {
             tracing::error!("Failed to parse log file: {}", e);
             (
