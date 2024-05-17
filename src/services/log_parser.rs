@@ -15,7 +15,7 @@ pub struct GameStats {
 pub struct Report {
     pub games: Vec<(String, GameStats)>,
     pub player_rankings: Vec<(String, i32)>,
-    pub total_deaths_by_means: HashMap<String, u32>,
+    pub total_deaths_by_means: Vec<(String, u32)>,
 }
 
 pub struct LogParser;
@@ -125,6 +125,10 @@ impl LogParser {
         }
 
         let player_rankings = Self::generate_rankings(&games);
+
+        let mut total_deaths_by_means: Vec<(String, u32)> =
+            total_deaths_by_means.into_iter().collect();
+        total_deaths_by_means.sort_by(|a, b| b.1.cmp(&a.1));
 
         Ok(Report {
             games,
