@@ -1,5 +1,6 @@
 use crate::services::log_parser::LogParser;
-use axum::{http::StatusCode, response::IntoResponse, Json};
+use axum::{extract::Query, http::StatusCode, response::IntoResponse, Json};
+use serde::Deserialize;
 use tracing::info;
 
 pub async fn health_check_handler() -> impl IntoResponse {
@@ -15,12 +16,18 @@ pub async fn health_check_handler() -> impl IntoResponse {
     Json(json_response)
 }
 
-pub async fn get_log_data_handler() -> impl IntoResponse {
+#[derive(Deserialize)]
+pub struct LogQuery {
+    debug: Option<bool>,
+}
+
+pub async fn get_log_data_handler(Query(params): Query<LogQuery>) -> impl IntoResponse {
     let file_path = "data/qgames.log";
     match LogParser::parse_log(file_path) {
         Ok(report) => {
-            // Uncomment the following line to print the output in the console ;)
-            // info!("{}", report.to_string());
+            if params.debug.unwrap_or(false) {
+                info!("{}", report.to_string());
+            }
             (StatusCode::OK, Json(report)).into_response()
         }
         Err(e) => {
