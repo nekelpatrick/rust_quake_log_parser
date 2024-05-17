@@ -65,7 +65,7 @@ impl LogParser {
                     if killer_name != "<world>" {
                         *current_game.kills.entry(killer_name.clone()).or_insert(0) += 1;
                     } else {
-                        *current_game.kills.entry("<world>".to_string()).or_insert(0) += 1;
+                        *current_game.kills.entry(killed_name.clone()).or_insert(0) -= 1;
                     }
 
                     if killer_name != "<world>" && !current_players.contains_key(&killer_name) {
@@ -102,10 +102,10 @@ impl LogParser {
 
         // Remove invalid player names and ensure consistency
         for (_, game) in games.iter_mut() {
-            game.players.retain(|player| player != "t");
-            game.kills.retain(|player, _| {
-                player != "t" && (game.players.contains(player) || player == "<world>")
-            });
+            game.players
+                .retain(|player| player != "t" && player != "<world>");
+            game.kills
+                .retain(|player, _| player != "t" && player != "<world>");
         }
 
         Ok(games)
@@ -126,9 +126,7 @@ impl LogParser {
         let mut player_rankings: HashMap<String, i32> = HashMap::new();
         for (_, stats) in games {
             for (player, kills) in &stats.kills {
-                if player != "<world>" {
-                    *player_rankings.entry(player.clone()).or_insert(0) += kills;
-                }
+                *player_rankings.entry(player.clone()).or_insert(0) += kills;
             }
         }
 
