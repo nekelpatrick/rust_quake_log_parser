@@ -8,6 +8,7 @@ pub struct GameStats {
     pub total_kills: u32,
     pub players: Vec<String>,
     pub kills: HashMap<String, i32>,
+    pub kills_by_means: HashMap<String, u32>,
 }
 
 #[derive(Debug, Serialize)]
@@ -67,12 +68,18 @@ impl LogParser {
                         continue; // Skip malformed lines
                     }
                     let killed_name = clean_player_name(killed_info_parts[0]);
+                    let means_of_death = killed_info_parts[1].to_string();
 
                     if killer_name != "<world>" {
                         *current_game.kills.entry(killer_name.clone()).or_insert(0) += 1;
                     } else {
                         *current_game.kills.entry(killed_name.clone()).or_insert(0) -= 1;
                     }
+
+                    *current_game
+                        .kills_by_means
+                        .entry(means_of_death)
+                        .or_insert(0) += 1;
 
                     if killer_name != "<world>" && !current_players.contains_key(&killer_name) {
                         current_game.players.push(killer_name.clone());
@@ -136,6 +143,7 @@ impl LogParser {
         rankings
     }
 }
+
 fn clean_player_name(name: &str) -> String {
     let name = name.trim();
     if name.contains(':') {

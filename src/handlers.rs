@@ -28,6 +28,10 @@ pub async fn get_log_data_handler() -> impl IntoResponse {
                 for (player, kills) in &stats.kills {
                     println!("    {}: {}", player, kills);
                 }
+                println!("  Kills by Means:");
+                for (means, count) in &stats.kills_by_means {
+                    println!("    {}: {}", means, count);
+                }
                 println!();
             }
             println!("Player Rankings:");
