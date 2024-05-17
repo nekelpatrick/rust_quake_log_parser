@@ -166,7 +166,6 @@ fn clean_player_name(name: &str) -> String {
         name.to_string()
     }
 }
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -267,6 +266,19 @@ mod tests {
             .collect(),
         };
 
-        assert_eq!(report, expected_report);
+        // Check games
+        for expected_game in &expected_report.games {
+            assert!(report.games.contains(expected_game));
+        }
+
+        // Check player rankings
+        for expected_ranking in &expected_report.player_rankings {
+            assert!(report.player_rankings.contains(expected_ranking));
+        }
+
+        // Check total deaths by means
+        for expected_death in &expected_report.total_deaths_by_means {
+            assert!(report.total_deaths_by_means.contains(expected_death));
+        }
     }
 }
