@@ -86,6 +86,14 @@ impl LogParser {
             games.insert(format!("game_{}", game_counter), current_game);
         }
 
+        // Remove invalid player names and ensure consistency
+        for game in games.values_mut() {
+            game.players.retain(|player| player != "t");
+            game.kills.retain(|player, _| {
+                player != "t" && (game.players.contains(player) || player == "<world>")
+            });
+        }
+
         Ok(games)
     }
 }
