@@ -13,11 +13,11 @@ pub struct GameStats {
 pub struct LogParser;
 
 impl LogParser {
-    pub fn parse_log(file_path: &str) -> Result<HashMap<String, GameStats>> {
+    pub fn parse_log(file_path: &str) -> Result<Vec<(String, GameStats)>> {
         let file = File::open(file_path)?;
         let reader = BufReader::new(file);
 
-        let mut games: HashMap<String, GameStats> = HashMap::new();
+        let mut games: Vec<(String, GameStats)> = Vec::new();
         let mut current_game = GameStats::default();
         let mut game_counter = 1;
         let mut current_players = HashMap::new();
@@ -26,7 +26,7 @@ impl LogParser {
             let line = line?;
             if line.contains("InitGame") {
                 if current_game.total_kills > 0 || !current_game.players.is_empty() {
-                    games.insert(format!("game_{}", game_counter), current_game);
+                    games.push((format!("game_{}", game_counter), current_game));
                     game_counter += 1;
                     current_game = GameStats::default();
                     current_players.clear();
@@ -82,11 +82,11 @@ impl LogParser {
         }
 
         if current_game.total_kills > 0 || !current_game.players.is_empty() {
-            games.insert(format!("game_{}", game_counter), current_game);
+            games.push((format!("game_{}", game_counter), current_game));
         }
 
         // Remove invalid player names and ensure consistency
-        for game in games.values_mut() {
+        for (_, game) in games.iter_mut() {
             game.players.retain(|player| player != "t");
             game.kills.retain(|player, _| {
                 player != "t" && (game.players.contains(player) || player == "<world>")
