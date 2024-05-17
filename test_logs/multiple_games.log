@@ -1,0 +1,12 @@
+0:00 ------------------------------------------------------------
+0:00 InitGame: 
+20:34 ClientConnect: 2
+20:34 ClientUserinfoChanged: 2 n\Isgalamido\t\0
+20:37 ClientBegin: 2
+21:42 Kill: 1022 2 22: <world> killed Isgalamido by MOD_TRIGGER_HURT
+20:37 ShutdownGame:
+0:00 ------------------------------------------------------------
+0:00 InitGame: 
+21:07 Kill: 1022 2 22: <world> killed Isgalamido by MOD_FALLING
+20:37 ShutdownGame:
+0:00 ------------------------------------------------------------
