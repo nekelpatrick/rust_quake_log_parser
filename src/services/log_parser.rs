@@ -19,33 +19,52 @@ impl LogParser {
         let reader = BufReader::new(file);
 
         let mut game_stats = GameStats::default();
+        let mut players_set = std::collections::HashSet::new();
+
         for line in reader.lines() {
             let line = line?;
             if line.contains("Kill:") {
                 game_stats.total_kills += 1;
-                let parts: Vec<&str> = line.split(' ').collect();
-                let killer_info_str = parts[5..].join(" ");
-                let killer_info: Vec<&str> = killer_info_str.split(" by ").collect();
-                let killer_name = killer_info[0].to_string();
-                let killed_name = killer_info[1].to_string();
+                let parts: Vec<&str> = line.split_whitespace().collect();
+                let killer_id = parts[1];
+                let killed_id = parts[2];
+                let means_of_death = parts[4];
+                let killer_name = parts[5..]
+                    .join(" ")
+                    .split(" killed ")
+                    .next()
+                    .unwrap()
+                    .trim()
+                    .to_string();
+                let killed_name = parts[5..]
+                    .join(" ")
+                    .split(" killed ")
+                    .nth(1)
+                    .unwrap()
+                    .split(" by ")
+                    .next()
+                    .unwrap()
+                    .trim()
+                    .to_string();
 
-                let death_cause = killer_info[1].to_string();
-                *game_stats.kills_by_means.entry(death_cause).or_insert(0) += 1;
+                *game_stats
+                    .kills_by_means
+                    .entry(means_of_death.to_string())
+                    .or_insert(0) += 1;
 
                 if killer_name != "<world>" {
                     *game_stats.kills.entry(killer_name.clone()).or_insert(0) += 1;
                 }
                 *game_stats.kills.entry(killed_name.clone()).or_insert(0) -= 1;
 
-                if !game_stats.players.contains(&killer_name) && killer_name != "<world>" {
-                    game_stats.players.push(killer_name);
+                if killer_name != "<world>" {
+                    players_set.insert(killer_name);
                 }
-                if !game_stats.players.contains(&killed_name) {
-                    game_stats.players.push(killed_name);
-                }
+                players_set.insert(killed_name);
             }
         }
 
+        game_stats.players = players_set.into_iter().collect();
         Ok(game_stats)
     }
 }
