@@ -10,10 +10,16 @@ pub struct GameStats {
     pub kills: HashMap<String, i32>,
 }
 
+#[derive(Debug, Serialize)]
+pub struct Report {
+    pub games: Vec<(String, GameStats)>,
+    pub player_rankings: Vec<(String, i32)>,
+}
+
 pub struct LogParser;
 
 impl LogParser {
-    pub fn parse_log(file_path: &str) -> Result<Vec<(String, GameStats)>> {
+    pub fn parse_log(file_path: &str) -> Result<Report> {
         let file = File::open(file_path)?;
         let reader = BufReader::new(file);
 
@@ -108,21 +114,15 @@ impl LogParser {
                 .retain(|player, _| player != "t" && player != "<world>");
         }
 
-        Ok(games)
+        let player_rankings = Self::generate_rankings(&games);
+
+        Ok(Report {
+            games,
+            player_rankings,
+        })
     }
 
-    pub fn print_report(games: &[(String, GameStats)]) {
-        for (game_name, stats) in games {
-            println!("{}:", game_name);
-            println!("  Total Kills: {}", stats.total_kills);
-            println!("  Players: {:?}", stats.players);
-            println!("  Kills:");
-            for (player, kills) in &stats.kills {
-                println!("    {}: {}", player, kills);
-            }
-            println!();
-        }
-
+    fn generate_rankings(games: &[(String, GameStats)]) -> Vec<(String, i32)> {
         let mut player_rankings: HashMap<String, i32> = HashMap::new();
         for (_, stats) in games {
             for (player, kills) in &stats.kills {
@@ -130,16 +130,12 @@ impl LogParser {
             }
         }
 
-        let mut rankings: Vec<(&String, &i32)> = player_rankings.iter().collect();
-        rankings.sort_by(|a, b| b.1.cmp(a.1));
+        let mut rankings: Vec<(String, i32)> = player_rankings.into_iter().collect();
+        rankings.sort_by(|a, b| b.1.cmp(&a.1));
 
-        println!("Player Rankings:");
-        for (player, kills) in rankings {
-            println!("  {}: {}", player, kills);
-        }
+        rankings
     }
 }
-
 fn clean_player_name(name: &str) -> String {
     let name = name.trim();
     if name.contains(':') {
