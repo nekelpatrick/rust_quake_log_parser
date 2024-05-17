@@ -37,43 +37,45 @@ impl LogParser {
                 if parts.len() < 6 {
                     continue; // Skip malformed lines
                 }
-                let killer_id = parts[1];
-                let killed_id = parts[2];
-                let killer_name = if killer_id == "1022" {
-                    "<world>".to_string()
-                } else {
-                    current_players.get(killer_id).cloned().unwrap_or_default()
-                };
-                let killed_name = current_players.get(killed_id).cloned().unwrap_or_default();
+                let killer_info = parts[5..].join(" ");
+                let killer_info_parts: Vec<&str> = killer_info.split(" killed ").collect();
+                if killer_info_parts.len() < 2 {
+                    continue; // Skip malformed lines
+                }
+                let killer_name = clean_player_name(killer_info_parts[0]);
+                let killed_info_parts: Vec<&str> = killer_info_parts[1].split(" by ").collect();
+                if killed_info_parts.len() < 2 {
+                    continue; // Skip malformed lines
+                }
+                let killed_name = clean_player_name(killed_info_parts[0]);
 
                 if killer_name != "<world>" {
                     *current_game.kills.entry(killer_name.clone()).or_insert(0) += 1;
-                } else {
-                    *current_game.kills.entry("<world>".to_string()).or_insert(0) += 1;
                 }
                 *current_game.kills.entry(killed_name.clone()).or_insert(0) -= 1;
 
-                if killer_name != "<world>" && !current_game.players.contains(&killer_name) {
+                if killer_name != "<world>" && !current_players.contains_key(&killer_name) {
                     current_game.players.push(killer_name.clone());
+                    current_players.insert(killer_name, true);
                 }
-                if !current_game.players.contains(&killed_name) {
+                if !current_players.contains_key(&killed_name) {
                     current_game.players.push(killed_name.clone());
+                    current_players.insert(killed_name, true);
                 }
             } else if line.contains("ClientUserinfoChanged:") {
                 let parts: Vec<&str> = line.split(' ').collect();
                 if parts.len() < 6 {
                     continue; // Skip malformed lines
                 }
-                let player_id = parts[1];
                 let player_info = parts[5..].join(" ");
                 let player_info_parts: Vec<&str> = player_info.split('\\').collect();
                 if player_info_parts.len() < 2 {
                     continue; // Skip malformed lines
                 }
                 let player_name = clean_player_name(player_info_parts[1]);
-                current_players.insert(player_id.to_string(), player_name.clone());
-                if !current_game.players.contains(&player_name) {
-                    current_game.players.push(player_name);
+                if !current_players.contains_key(&player_name) {
+                    current_game.players.push(player_name.clone());
+                    current_players.insert(player_name, true);
                 }
             }
         }
