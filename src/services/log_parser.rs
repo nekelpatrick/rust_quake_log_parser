@@ -110,6 +110,36 @@ impl LogParser {
 
         Ok(games)
     }
+
+    pub fn print_report(games: &[(String, GameStats)]) {
+        for (game_name, stats) in games {
+            println!("{}:", game_name);
+            println!("  Total Kills: {}", stats.total_kills);
+            println!("  Players: {:?}", stats.players);
+            println!("  Kills:");
+            for (player, kills) in &stats.kills {
+                println!("    {}: {}", player, kills);
+            }
+            println!();
+        }
+
+        let mut player_rankings: HashMap<String, i32> = HashMap::new();
+        for (_, stats) in games {
+            for (player, kills) in &stats.kills {
+                if player != "<world>" {
+                    *player_rankings.entry(player.clone()).or_insert(0) += kills;
+                }
+            }
+        }
+
+        let mut rankings: Vec<(&String, &i32)> = player_rankings.iter().collect();
+        rankings.sort_by(|a, b| b.1.cmp(a.1));
+
+        println!("Player Rankings:");
+        for (player, kills) in rankings {
+            println!("  {}: {}", player, kills);
+        }
+    }
 }
 
 fn clean_player_name(name: &str) -> String {
